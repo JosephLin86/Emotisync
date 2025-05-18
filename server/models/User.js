@@ -6,9 +6,6 @@ const UserSchema = new mongoose.Schema({
     password: {type: String, required: true},
     role: {type: String, enum: ['client', 'therapist'], required: true},
 
-    therapistProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Therapist'},
-    clientProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Client'},
-    
     refreshToken: {type: String},
 }, { timestamps: true });
 

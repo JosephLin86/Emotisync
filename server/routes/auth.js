@@ -2,9 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const Therapist = require('../models/Therapist');
-const Client = require('../models/Client');
 const router = express.Router();
+
 
 //register a new user route
 router.post('/register', async (req, res) => {
@@ -21,17 +20,6 @@ router.post('/register', async (req, res) => {
 
         //create new user
         const user = new User({username, email, password: hashedPassword, role});
-
-        //role-based profile creation
-        if(role === 'therapist') {
-            const therapist = new Therapist({userId: user._id});
-            await therapist.save();
-            user.therapistProfile = therapist._id;
-        } else if (role === 'client') {
-            const client = new Client({userId: user._id});
-            await client.save();
-            user.clientProfile = client._id;
-        }
 
         await user.save();
 
