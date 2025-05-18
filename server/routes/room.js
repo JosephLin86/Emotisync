@@ -12,12 +12,18 @@ router.post('/', verifyToken, async (req, res) => {
     }
 
     try {
+
+        // Retrieve therapistProfile from authenticated user
+        const therapistProfileId = req.user.therapistProfile;
+        if (!therapistProfileId) {
+            return res.status(400).json({ message: 'Therapist profile not found for this user.' });
+        }
         //check if room already exists
         const existing = await Room.findOne({therapistId: req.user.id, clientId});
         if (existing) return res.status(400).json({message: 'Room already exists' });
 
         const newRoom = new Room ({
-            therapistId: req.user.id,
+            therapistId: therapistProfileId,
             clientId,
         });
 
