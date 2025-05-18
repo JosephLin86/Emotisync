@@ -42,15 +42,36 @@ router.post('/login', async (req, res) => {
         if(!isMatch) return res.status(400).json({error: 'Invalid credentials'});
 
         //Create JWT
-        const token = jwt.sign(
+        const accessToken = jwt.sign(
             { id: user._id, role: user.role}, 
             process.env.JWT_SECRET, 
             {expiresIn: '2h'}
         );
 
+        const refreshToken = jwt.sign(
+            {id: user._id},
+            process.env.JWT_REFRESH,
+            {expiresIn: '7d'}
+        );
+
+        //store refresh token in database
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'Strict',
+        });
+
         res.json({
-            token, 
-            user: {id: user._id, username: user.username, email: user.email, role: user.role}
+            token: accessToken, 
+            user: {
+                id: user._id, 
+                username: user.username, 
+                email: user.email, 
+                role: user.role}
         });
         
     } catch (error) {
@@ -58,4 +79,36 @@ router.post('/login', async (req, res) => {
     }
 });
 
+//Refresh token route
+router.post('/refresh', async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if(!refreshToken) return res.status(401).json({error: 'No refresh token provided'});
+    
+    try {
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH);
+
+        const newAccessToken = jwt.sign(
+            {id: decoded.id},
+            process.env.JWT_SECRET,
+            {expiresIn: '2h'}
+        );
+
+        res.json({token: newAccessToken});
+    } catch (error) {
+        res.status(401).json({error: 'Invalid or expired refresh token'});
+    }
+});
+
+//Logout route
+router.post('/logout', async (req, res) => {
+    const {refreshToken} = req.body;
+
+    try {
+        res.clearCookie('refreshToken');
+        res.json({message: 'Logged out successfully'});
+        
+    } catch (error) {
+        res.status(400).json({message: 'Logout failed', error: error.message});
+    }
+});
 module.exports = router;
