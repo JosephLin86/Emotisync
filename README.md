@@ -11,6 +11,9 @@ A real-time collaborative journaling platform for therapists and clients to refl
 - Secure authentication (JWT, bcrypt)
 - Clean, responsive UI
 
+## To Add
+- graph showing emotional tagging history
+
 ## Tech Stack
 
 - **Frontend:** React, Tailwind CSS, Socket.io-client

@@ -5,6 +5,10 @@ const UserSchema = new mongoose.Schema({
     email: {type: String, required: true, unique: true},
     password: {type: String, required: true},
     role: {type: String, enum: ['client', 'therapist'], required: true},
+
+    therapistProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Therapist'},
+    clientProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Client'},
+    
     refreshToken: {type: String},
 }, { timestamps: true });
 

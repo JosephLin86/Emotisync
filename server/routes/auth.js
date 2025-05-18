@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Therapist = require('../models/Therapist');
+const Client = require('../models/Client');
 const router = express.Router();
 
 //register a new user route
@@ -19,6 +21,18 @@ router.post('/register', async (req, res) => {
 
         //create new user
         const user = new User({username, email, password: hashedPassword, role});
+
+        //role-based profile creation
+        if(role === 'therapist') {
+            const therapist = new Therapist({userId: user._id});
+            await therapist.save();
+            user.therapistProfile = therapist._id;
+        } else if (role === 'client') {
+            const client = new Client({userId: user._id});
+            await client.save();
+            user.clientProfile = client._id;
+        }
+
         await user.save();
 
         res.status(201).json({message: 'User registered successfully'});
@@ -93,7 +107,7 @@ router.post('/refresh', async (req, res) => {
             {expiresIn: '2h'}
         );
 
-        res.json({token: newAccessToken});
+        res.json({newToken: newAccessToken});
     } catch (error) {
         res.status(401).json({error: 'Invalid or expired refresh token'});
     }
