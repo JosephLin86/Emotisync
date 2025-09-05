@@ -1,67 +1,81 @@
-# EmotiSync
+# EmotiSync  
 
-A real-time collaborative journaling platform for therapists and clients to reflect, share, and grow emotionally together.
+A real-time collaborative journaling and therapy platform that empowers therapists and clients to reflect, share, and grow emotionally together.  
 
-## Features
+## Features  
 
-- Real-time collaborative journaling
-- Role-based access (therapist/client)
-- Weekly reflection prompts
-- Emotional tagging and mood tracking
-- Secure authentication (JWT, bcrypt)
-- Clean, responsive UI
+- 🔑 **Role-based access** (therapist / client)  
+- 📓 **Room-based journaling** (each client-therapist pair has a private “room”)  
+- 💬 **Real-time messaging & session recaps**  
+- 📝 **Shared journals** (client → therapist) & **private therapist notes**  
+- 📊 **Weekly reflection prompts & emotional tagging with mood tracking**  
+- 🔒 **Secure authentication** with JWT + bcrypt  
+- ⚡ **Responsive UI** (React + Tailwind, Socket.io for realtime updates)  
 
-## To Add
-- graph showing emotional tagging history
+### Planned / To Add  
+- Graph of **emotional tagging history**  
+- Dashboard views with **analytics & progress insights**  
+- File sharing inside rooms  
 
-## Tech Stack
+## Tech Stack  
 
-- **Frontend:** React, Tailwind CSS, Socket.io-client
-- **Backend:** Node.js, Express, MongoDB, Socket.io, JWT, bcrypt
+- **Frontend:** React, Tailwind CSS, Socket.io-client  
+- **Backend:** Node.js, Express, MongoDB, Socket.io, JWT, bcrypt  
 
-## Getting Started
+## Getting Started  
 
-1. Clone the repo:
+1. Clone the repo:  
    ```sh
    git clone https://github.com/yourusername/emotisync.git
-   ```
-2. Install backend dependencies:
+   ```  
+
+2. Install backend dependencies:  
    ```sh
    cd emotisync/server
    npm install
-   ```
-3. Install frontend dependencies:
+   ```  
+
+3. Install frontend dependencies:  
    ```sh
    cd ../client
    npm install
-   ```
-4. Set up environment variables (see `.env.example`).
-5. Run the backend:
+   ```  
+
+4. Set up environment variables (see `.env.example`).  
+
+5. Run the backend:  
    ```sh
    npm run dev
-   ```
-6. Run the frontend:
+   ```  
+
+6. Run the frontend:  
    ```sh
    npm start
-   ```
+   ```  
 
-## API Endpoints
+## API Endpoints  
 
-| Method | Endpoint           | Description                |
-|--------|--------------------|----------------------------|
-| POST   | /api/auth/register | Register a new user        |
-| POST   | /api/auth/login    | Login and get JWT token    |
-| GET    | /api/journal       | Get journal entries        |
-| POST   | /api/journal       | Create a new journal entry |
+| Method | Endpoint                | Description                                |
+|--------|--------------------------|--------------------------------------------|
+| POST   | /api/auth/register       | Register a new user                        |
+| POST   | /api/auth/login          | Login and get JWT token                    |
+| POST   | /api/rooms               | Create a new therapy room                  |
+| GET    | /api/rooms/:id           | Get room details                           |
+| GET    | /api/rooms/:id/journal   | Get all journal entries in a room          |
+| POST   | /api/rooms/:id/journal   | Create a new journal entry (shared)        |
+| GET    | /api/rooms/:id/notes     | Get therapist’s private notes (therapist)  |
+| POST   | /api/rooms/:id/notes     | Add a private therapist note               |
+| GET    | /api/rooms/:id/checkins  | Get client check-ins                       |
+| POST   | /api/rooms/:id/checkins  | Create a new check-in                      |
 
-## Screenshots
+## Screenshots  
 
-![Dashboard Screenshot](screenshots/dashboard.png)
+![Dashboard Screenshot](screenshots/dashboard.png)  
 
-## Contributing
+## Contributing  
 
-Pull requests are welcome! For major changes, please open an issue first.
+Pull requests are welcome! For major changes, please open an issue first.  
 
-## License
+## License  
 
-[MIT](LICENSE)
+[MIT](LICENSE)  
