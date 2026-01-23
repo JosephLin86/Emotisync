@@ -14,8 +14,12 @@ const app = express();
 //middleware chain begins
 app.use(express.json());
 
-app.use(cors());
+app.use(cors({
+    origin: true,  // Allow any origin (like default)
+    credentials: true  // But still allow credentials
+}));
 app.use(helmet());
+
 app.use('/api/protected', protectedRoutes);
 app.use(cookieParser()); //for refresh in auth
 //route mounting: goes to routes/auth.js when req starts with /api/auth

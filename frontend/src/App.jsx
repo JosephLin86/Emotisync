@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { AuthProvider } from './context/AuthContext';
+import Login from './components/auth/Login';
 
 function App() {
-
   return (
-    <div>
-      <h1>hello</h1>
-      <AuthProvider>
-        <h1>EmotiSync</h1>
-      </AuthProvider>
-    </div>
+    <AuthProvider>
+      <div>
+        <h1>yummer</h1>
+        <Login />
+      </div>
+    </AuthProvider>
   );
 }
 
