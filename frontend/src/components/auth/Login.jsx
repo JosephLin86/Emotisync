@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-const Login = ({ onSwitchToRegister }) => {
+
+
+const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -9,6 +12,7 @@ const Login = ({ onSwitchToRegister }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -82,8 +86,16 @@ const Login = ({ onSwitchToRegister }) => {
           <div className="text-center">
             <button
               type="button"
-              onClick={onSwitchToRegister}
-              className="text-indigo-600 hover:text-indigo-500"
+              onClick={() => navigate("/register")}
+              className="
+                text-indigo-600 
+                hover:text-indigo-400
+                active:text-indigo-800
+                cursor-pointer
+                transition-colors
+                duration-150
+              "
+                
             >
               Don't have an account? Sign up
             </button>

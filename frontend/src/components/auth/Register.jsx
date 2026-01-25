@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Register = ({ onSwitchToLogin }) => {
     const[formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const Register = ({ onSwitchToLogin }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const navigate = useNavigate();
     const{ register } = useAuth();
 
 
@@ -118,8 +120,15 @@ const Register = ({ onSwitchToLogin }) => {
                     <div className="text-center">
                         <button
                         type="button"
-                        onClick={onSwitchToLogin}
-                        className="text-indigo-600 hover:text-indigo-500"
+                        onClick={() => navigate('/login')}
+                        className="
+                            text-indigo-600 
+                            hover:text-indigo-400
+                            active: text-indigo-800
+                            cursor-pointer
+                            transition-colors
+                            duration-150
+                        "
                         >
                             Already have an account? Sign in
                         </button>
