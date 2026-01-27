@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const Register = ({ onSwitchToLogin }) => {
+const Register = () => {
     const[formData, setFormData] = useState({
         username:'',
         email: '',
@@ -10,6 +10,7 @@ const Register = ({ onSwitchToLogin }) => {
         role: 'client',  //the default role
     });
 
+    const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -40,8 +41,12 @@ const Register = ({ onSwitchToLogin }) => {
         if(!result.success){
             setError(result.error || 'Registration Failed')
         }
+        setSuccess(true);
 
         setLoading(false);
+        setTimeout(() =>{
+            navigate('/login');
+        }, 1000);
 
     };
 
@@ -105,7 +110,13 @@ const Register = ({ onSwitchToLogin }) => {
                         </div>
                     </div>
 
-                    {error &&<div className="text-red-600 text-sm text-center">{error}</div>}
+                    {error &&<div className="text-red-600 text-sm text-center">{error}</div>} {/* error in registration */}
+
+                    {success &&(
+                        <div className="text-green-600 text-sm text-center">
+                            Account created successfully, redirecting to Login...
+                        </div>
+                    )}
 
                     <div>
                         <button

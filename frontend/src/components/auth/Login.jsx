@@ -9,6 +9,8 @@ const Login = () => {
     email: '',
     password: ''
   });
+
+  const[success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -31,8 +33,11 @@ const Login = () => {
     if (!result.success) {
       setError(result.error);
     }
-    
+    setSuccess(true);
     setLoading(false);
+    setTimeout(() =>{
+            navigate('/register'); //change this later
+        }, 1000);
   };
 
   return (
@@ -71,6 +76,12 @@ const Login = () => {
 
           {error && (
             <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
+
+          {success && (
+            <div className="text-green-600 text-sm text-center">
+              Logged in successfully, redirecting to Dashboard...
+            </div>
           )}
 
           <div>
