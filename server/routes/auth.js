@@ -103,7 +103,6 @@ router.post('/refresh', async (req, res) => {
 
 //Logout route
 router.post('/logout', async (req, res) => {
-    const {refreshToken} = req.body;
 
     try {
         res.clearCookie('refreshToken');
@@ -111,6 +110,10 @@ router.post('/logout', async (req, res) => {
         
     } catch (error) {
         res.status(400).json({message: 'Logout failed', error: error.message});
+    } finally {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');  // ← Add this line
+        setUser(null);
     }
 });
 module.exports = router;

@@ -21,6 +21,10 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));  // ← Load it immediately into state
+    }
     if (token) {
       try {
         const response = await api.get('/api/protected/me');
@@ -35,10 +39,12 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/api/auth/login', { email, password });
+      console.log('Login response:', response.data);
       const { token, user } = response.data;
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
-      return { success: true };
+      return { success: true, user };
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Login failed' };
     }

@@ -27,16 +27,26 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess(false);
 
     const result = await login(formData.email, formData.password);
     
     if (!result.success) {
       setError(result.error);
+      setLoading(false);
+      return;
     }
+
+    setError('');
     setSuccess(true);
     setLoading(false);
     setTimeout(() =>{
-            navigate('/register'); //change this later
+            if(result.user?.role === 'therapist'){
+              navigate('/dashboard/therapist');
+            }
+            else {
+              navigate('/dashboard/client');
+            }
         }, 1000);
   };
 

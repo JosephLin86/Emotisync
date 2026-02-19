@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 //pages
 import LoginPage from "./pages/LoginPage";
@@ -22,9 +23,21 @@ function App() {
           <Route path="/register" element={<RegisterPage/>}/>
 
           {/* protected and soon-to-be */}
-          <Route path="/dashboard/client" element={<ClientDashboardPage/>} />
-          <Route path="dashboard/therapist" element={<TherapistDashboardPage/>} />
-          <Route path="/rooms/:roomId" element={<RoomPage/>} />
+          <Route path="/dashboard/client" element={
+            <ProtectedRoute>
+              <ClientDashboardPage/>
+            </ProtectedRoute>
+            } />
+          <Route path="dashboard/therapist" element={
+            <ProtectedRoute>
+              <TherapistDashboardPage/>
+            </ProtectedRoute>
+            } />
+          <Route path="/rooms/:roomId" element={
+            <ProtectedRoute>
+              <RoomPage/>
+            </ProtectedRoute>
+            } />
 
           {/*fallback? */}
 
