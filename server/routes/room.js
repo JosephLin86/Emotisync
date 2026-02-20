@@ -1,5 +1,6 @@
 const express = require('express');
 const Room = require('../models/Room');
+const JournalEntry = require('../models/JournalEntry');
 const verifyToken = require('../middleware/verifyToken');
 const router = express.Router();
 
@@ -70,8 +71,8 @@ router.get("/my", verifyToken, async(req, res) => {
 router.post("/:roomId/journal", verifyToken, async(req, res) => {
     try{
         const { roomId } = req.params;
+        const { title, content } = req.body;
         const userId = String(req.user.id);
-        const { content } = req.body;
 
         if(!content || !content.trim()) {
             return res.status(400).json({ message: 'content is required' });
@@ -87,50 +88,66 @@ router.post("/:roomId/journal", verifyToken, async(req, res) => {
         
         if(!isMember) return res.status(403).json({ message: 'Forbidden' });
 
-        const newEntry = {
-            author: userId,
+        //only clients can create new journal entries
+        if(req.user.role !== 'client') {
+            return res.status(403).json({ message: 'Only clients can create journal entries'});
+        }
+
+        //create the entry in a separate database collection for scalability
+        const newEntry = new JournalEntry({
+            title: title || 'Untitled',
             content: content.trim(),
-            createdAt: new Date()
-        };
+            user: userId,
+            roomId: roomId,
+            isShared: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
 
-        room.sharedJournal.push(newEntry);
+        await newEntry.save();
 
-        room.updatedAt = new Date(); //updates the time for when the room was last touched
-
+        // Update room's updatedAt timestamp
+        room.updatedAt = new Date();
         await room.save();
 
-        //return the newest entry
-        return res.status(201).json(room.sharedJournal[room.sharedJournal.length-1]);
+        // Populate user info before returning
+        await newEntry.populate('user', 'username email role');
+
+        return res.status(201).json(newEntry);
 
     } catch (error){
+        console.error('Journal entry creation error:', error);
         return res.status(500).json({ message: 'Failed to add Journal Entry', error: error.message });
     }
 });
 
-//Journal Entry GET
+//Journal Entry GET (fetch from separate collection)
 router.get("/:roomId/journal", verifyToken, async(req, res) => {
     try{
         const { roomId } = req.params;
         const userId = String(req.user.id);
 
-        const room = await Room.findById(roomId)
-            .populate("sharedJournal.author", "username email role");
-
-        if(!room) return res.status(404).json({ message: "Room Not Found"});
+        // Verify room exists and user is a member
+        const room = await Room.findById(roomId);
+        if (!room) return res.status(404).json({ message: "Room not found" });
 
         const isMember = 
-            String(room.therapistId) === userId ||
-            String(room.clientId) === userId;
+            String(room.therapistId) === String(userId) ||
+            String(room.clientId) === String(userId);
 
         if (!isMember) return res.status(403).json({ message: "Forbidden"});
 
-        return res.status(200).json(room.sharedJournal);
+        // Fetch journal entries from separate collection
+        const entries = await JournalEntry.find({ roomId: roomId, isShared: true })
+            .populate('user', 'username email role')
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json(entries);
 
     } catch(error) {
-        return res.status(500).json({ message: "Failed to Fetch Journal Entries", error: error.message });
+        console.error('Journal fetch error:', error);
+        return res.status(500).json({ message: "Failed to fetch journal entries", error: error.message });
     }
-
-
 });
 
 router.get("/:roomId", verifyToken, async(req, res) =>{
