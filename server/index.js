@@ -6,8 +6,8 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
-const journalRoutes = require('./routes/journal');
 const roomRoutes = require('./routes/room');
+const journalRoutes = require('./routes/journal');
 
 //initializes express app
 const app = express();
@@ -26,8 +26,8 @@ app.use(cookieParser()); //for refresh in auth
 //Example: POST /api/auth/register passed to router.post('/register', registerUser);
 app.use('/api/auth', authRoutes);
 
-app.use('/api/journal', journalRoutes);
 app.use('/api/room', roomRoutes);
+app.use('/api/journal', journalRoutes);
 
 //simple test route
 app.get('/', (req, res) => {
