@@ -66,11 +66,14 @@ router.get("/my", verifyToken, async(req, res) => {
 
 
 router.get("/:roomId", verifyToken, async(req, res) =>{
-    const room = await Room.findById(req.params.roomId);
+    const room = await Room.findById(req.params.roomId)
+        .populate("therapistId", "username email")
+        .populate("clientId", "username email");
+    
     if(!room) return res.status(404).json({message: "Room Not Found"});
 
     const userId = String(req.user.id);
-    const isMember = String(room.therapistId) === userId || String(room.clientId) === userId;
+    const isMember = String(room.therapistId._id) === userId || String(room.clientId._id) === userId;
 
     if(!isMember) return res.status(403).json({ message: "Forbidden" });
 

@@ -54,6 +54,7 @@ export default function ClientDashboardPage() {
 
     const handleMoodUpdate = (mood) => {
         setSelectedMood(mood);
+        setShowMoodUpdate(true);
         // TODO: Send mood update to backend
         console.log('Mood updated:', mood);
         setTimeout(() => setShowMoodUpdate(false), 1500);
@@ -71,10 +72,10 @@ export default function ClientDashboardPage() {
     // Loading state
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-purple-900">
+            <div className="min-h-screen flex items-center justify-center bg-purple-50">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-purple-700 border-t-purple-300 rounded-full animate-spin mx-auto mb-4"></div>
-                    <div className="text-lg text-purple-100">Loading your dashboard...</div>
+                    <div className="w-16 h-16 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="text-lg text-purple-900">Loading your dashboard...</div>
                 </div>
             </div>
         );
@@ -83,7 +84,7 @@ export default function ClientDashboardPage() {
     // Error state
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-purple-900">
+            <div className="min-h-screen flex items-center justify-center bg-purple-50">
                 <div className="text-center max-w-md bg-white rounded-xl shadow-2xl p-8">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,7 +95,7 @@ export default function ClientDashboardPage() {
                     <div className="text-gray-600 mb-6">{error}</div>
                     <button
                         onClick={() => navigate('/login')}
-                        className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                        className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium cursor-pointer"
                     >
                         Back to Login
                     </button>
@@ -105,25 +106,25 @@ export default function ClientDashboardPage() {
 
     // Main Dashboard
     return (
-        <div className="min-h-screen bg-purple-900">
+        <div className="min-h-screen bg-purple-50">
             {/* Header */}
-            <header className="bg-purple-950/50 backdrop-blur-sm border-b border-purple-800/50">
+            <header className="bg-white/80 backdrop-blur-sm border-b border-purple-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-6 py-6">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h1 className="text-3xl font-bold text-white mb-1">
+                            <h1 className="text-3xl font-bold text-purple-900 mb-1">
                                 Welcome back, {user?.username}
                             </h1>
                             {room && (
-                                <p className="text-purple-200 flex items-center gap-2">
+                                <p className="text-purple-700 flex items-center gap-2">
                                     <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                                    Your Therapist: <span className="font-medium text-purple-100">{room?.therapistId?.username}</span>
+                                    Your Therapist: <span className="font-medium text-purple-800">{room?.therapistId?.username}</span>
                                 </p>
                             )}
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="px-5 py-2.5 text-purple-200 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors font-medium"
+                            className="px-5 py-2.5 text-purple-700 hover:text-purple-900 hover:bg-purple-100 rounded-lg transition-colors font-medium cursor-pointer"
                         >
                             Logout
                         </button>
@@ -136,7 +137,7 @@ export default function ClientDashboardPage() {
                 {!room ? (
                     // No Room Assigned
                     <div className="max-w-2xl mx-auto">
-                        <div className="bg-white rounded-xl shadow-2xl p-12 text-center">
+                        <div className="bg-white rounded-xl shadow-2xl p-12 text-center border border-purple-100">
                             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <svg className="w-10 h-10 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -150,7 +151,7 @@ export default function ClientDashboardPage() {
                             </p>
                             <button
                                 onClick={() => setShowId(!showId)}
-                                className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium inline-flex items-center gap-2"
+                                className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium inline-flex items-center gap-2 cursor-pointer shadow-lg hover:shadow-xl"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -159,11 +160,11 @@ export default function ClientDashboardPage() {
                             </button>
 
                             {showId && (
-                                <div className="mt-8 p-6 bg-purple-50 rounded-xl border border-purple-200">
+                                <div className="mt-8 p-6 bg-purple-50 rounded-xl border-2 border-purple-200">
                                     <p className="text-sm font-semibold text-purple-900 mb-3 uppercase tracking-wide">
                                         Your Client ID
                                     </p>
-                                    <div className="bg-white p-4 rounded-lg border border-purple-300 font-mono text-sm text-gray-800 break-all select-all">
+                                    <div className="bg-white p-4 rounded-lg border-2 border-purple-300 font-mono text-sm text-gray-800 break-all select-all">
                                         {user?.id}
                                     </div>
                                     <p className="text-sm text-purple-700 mt-4 flex items-center justify-center gap-2">
@@ -180,9 +181,7 @@ export default function ClientDashboardPage() {
                     // Has Room - Main Dashboard
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Enter Room Card */}
-                        <div
-                            className="bg-gradient-to-br from-purple-600 via-purple-500 to-violet-500 rounded-xl shadow-2xl p-10 text-white hover:shadow-purple-500/50 hover:scale-[1.02] transition-all group"
-                        >
+                        <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-violet-500 rounded-xl shadow-2xl p-10 text-white">
                             <div className="flex items-start justify-between mb-6">
                                 <div>
                                     <h2 className="text-3xl font-bold mb-2">Your Therapy Room</h2>
@@ -219,8 +218,9 @@ export default function ClientDashboardPage() {
                                 </div>
                             </div>
 
-                            <button onClick={handleEnterRoom}
-                                className="w-full bg-white text-purple-600 py-4 rounded-lg font-semibold text-lg cursor-pointer hover:bg-purple-50 transition-colors flex items-center justify-center gap-3 group-hover:gap-4"
+                            <button 
+                                onClick={handleEnterRoom}
+                                className="w-full bg-white text-purple-600 py-4 rounded-lg font-semibold text-lg cursor-pointer hover:bg-purple-50 hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-3 hover:gap-4"
                             >
                                 Enter Room
                                 <svg className="w-6 h-6 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,7 +230,7 @@ export default function ClientDashboardPage() {
                         </div>
 
                         {/* Mood Update Card */}
-                        <div className="bg-white rounded-xl shadow-2xl p-10">
+                        <div className="bg-white rounded-xl shadow-2xl p-10 border border-purple-100">
                             <div className="flex items-start justify-between mb-6">
                                 <div>
                                     <h2 className="text-3xl font-bold text-gray-900 mb-2">How are you feeling?</h2>
@@ -253,7 +253,7 @@ export default function ClientDashboardPage() {
                                             <button
                                                 key={mood.value}
                                                 onClick={() => handleMoodUpdate(mood.label)}
-                                                className="bg-gray-50 hover:bg-purple-50 p-6 rounded-lg text-center transition-all hover:scale-105 active:scale-95 border-2 border-gray-200 hover:border-purple-300"
+                                                className="bg-gray-50 hover:bg-purple-50 p-6 rounded-lg text-center transition-all hover:scale-105 active:scale-95 border-2 border-gray-200 hover:border-purple-300 cursor-pointer"
                                             >
                                                 <div className="text-4xl mb-2">{mood.emoji}</div>
                                                 <div className="text-sm font-medium text-gray-700">{mood.label}</div>

@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
 const roomRoutes = require('./routes/room');
 const journalRoutes = require('./routes/journal');
+const resourceRoutes = require('./routes/resources');
 
 //initializes express app
 const app = express();
@@ -28,6 +29,8 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/room', roomRoutes);
 app.use('/api/journal', journalRoutes);
+app.use('/api/room', resourceRoutes);
+
 
 //simple test route
 app.get('/', (req, res) => {
