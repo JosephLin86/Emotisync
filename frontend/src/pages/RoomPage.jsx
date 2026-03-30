@@ -15,6 +15,7 @@ export default function RoomPage() {
 
     const [room, setRoom] = useState(null);
     const [journalEntries, setJournalEntries] = useState([]);
+    const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('journals'); // journals, messages, mood, resources
@@ -34,6 +35,15 @@ export default function RoomPage() {
             // Fetch journal entries
             const journalData = await getJournal(roomId);
             setJournalEntries(journalData);
+            
+            // Fetch messages from separate collection
+            try {
+                const messagesResponse = await api.get(`/api/messages/${roomId}/messages`);
+                setMessages(messagesResponse.data);
+            } catch (msgErr) {
+                console.error('Failed to fetch messages:', msgErr);
+                setMessages([]);
+            }
             
             setLoading(false);
         } catch (err) {
@@ -61,7 +71,7 @@ export default function RoomPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
             ),
-            count: room?.messages?.length || 0
+            count: messages.length
         },
         { 
             id: 'mood', 

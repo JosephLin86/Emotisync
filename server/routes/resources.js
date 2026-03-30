@@ -171,7 +171,59 @@ router.get('/:roomId/resources/:resourceId/download', verifyToken, async (req, r
     }
 });
 
-// Delete a resource (therapist only)
+// Update resource name (PATCH)
+router.patch('/:roomId/resources/:resourceId', verifyToken, async (req, res) => {
+    try {
+        const { roomId, resourceId } = req.params;
+        const { name } = req.body;
+        
+        // Validate name
+        if (!name || !name.trim()) {
+            return res.status(400).json({ message: 'File name is required' });
+        }
+        
+        // Verify room exists and user has access
+        const room = await Room.findById(roomId);
+        if (!room) {
+            return res.status(404).json({ message: 'Room not found' });
+        }
+        
+        const isTherapist = room.therapistId.toString() === req.user.id;
+        const isClient = room.clientId.toString() === req.user.id;
+        
+        if (!isTherapist && !isClient) {
+            return res.status(403).json({ message: 'You do not have access to this room' });
+        }
+        
+        // Find resource
+        const resource = await Resource.findById(resourceId);
+        if (!resource) {
+            return res.status(404).json({ message: 'Resource not found' });
+        }
+        
+        // Check edit permissions:
+        // - Therapist can edit any file
+        // - Client can only edit their own files
+        if (!isTherapist && resource.uploadedBy.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'You can only edit files you uploaded' });
+        }
+        
+        // Update name
+        resource.name = name.trim();
+        await resource.save();
+        
+        // Populate uploader info for response
+        await resource.populate('uploadedBy', 'username role');
+        
+        res.json(resource);
+        
+    } catch (err) {
+        console.error('Update resource error:', err);
+        res.status(500).json({ message: 'Failed to update file name', error: err.message });
+    }
+});
+
+// Delete a resource
 router.delete('/:roomId/resources/:resourceId', verifyToken, async (req, res) => {
     try {
         const { roomId, resourceId } = req.params;
@@ -182,8 +234,11 @@ router.delete('/:roomId/resources/:resourceId', verifyToken, async (req, res) =>
             return res.status(404).json({ message: 'Room not found' });
         }
         
-        if (room.therapistId.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Only therapists can delete resources' });
+        // if (room.therapistId.toString() !== req.user.id) {
+        //     return res.status(403).json({ message: 'Only therapists can delete resources' });
+        // }
+        if (isClient && resource.uploadedBy.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'You can only delete files you uploaded' });
         }
         
         // Find resource

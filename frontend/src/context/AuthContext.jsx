@@ -22,17 +22,16 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));  // ← Load it immediately into state
+    
+    if (token && savedUser) {
+      // Load user from localStorage
+      setUser(JSON.parse(savedUser));
+    } else {
+      // No token or user - clear everything
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
-    if (token) {
-      try {
-        const response = await api.get('/api/protected/me');
-        setUser(response.data.user);
-      } catch (error) {
-        localStorage.removeItem('token');
-      }
-    }
+    
     setLoading(false);
   };
 
@@ -66,6 +65,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setUser(null);
     }
   };

@@ -43,19 +43,26 @@ router.post('/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch) return res.status(400).json({error: 'Invalid credentials'});
 
-        //Create JWT
+        //Create JWT - ADD USERNAME HERE
         const accessToken = jwt.sign(
-            { id: user._id, role: user.role}, 
+            { 
+                id: user._id, 
+                username: user.username,  // ← ADD THIS LINE!
+                role: user.role
+            }, 
             process.env.JWT_SECRET, 
             {expiresIn: '2h'}
         );
 
         const refreshToken = jwt.sign(
-            {id: user._id},
+            {
+                id: user._id,
+                username: user.username  // ← ADD THIS LINE TOO!
+            },
             process.env.JWT_REFRESH,
             {expiresIn: '7d'}
         );
-
+        
         //store refresh token in database
         user.refreshToken = refreshToken;
         await user.save();

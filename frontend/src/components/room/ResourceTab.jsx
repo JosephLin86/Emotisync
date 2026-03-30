@@ -6,6 +6,8 @@ export default function ResourceTab({ roomId, userRole }) {
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [editingId, setEditingId] = useState(null);
+    const [editingName, setEditingName] = useState('');
 
     // Fetch files on component mount
     useEffect(() => {
@@ -77,8 +79,59 @@ export default function ResourceTab({ roomId, userRole }) {
             await api.delete(`/api/room/${roomId}/resources/${fileId}`);
             setFiles(files.filter(f => f._id !== fileId));
         } catch (err) {
-            alert('Failed to delete file');
+            alert(err.response?.data?.message || 'Failed to delete file');
         }
+    };
+
+    const startEditing = (file) => {
+        setEditingId(file._id);
+        setEditingName(file.name);
+    };
+
+    const cancelEditing = () => {
+        setEditingId(null);
+        setEditingName('');
+    };
+
+    const saveEdit = async (fileId) => {
+        if (!editingName.trim()) {
+            alert('File name cannot be empty');
+            return;
+        }
+
+        try {
+            const response = await api.patch(`/api/room/${roomId}/resources/${fileId}`, {
+                name: editingName.trim()
+            });
+
+            // Update the file in state
+            setFiles(files.map(f => f._id === fileId ? response.data : f));
+            
+            // Clear editing state
+            setEditingId(null);
+            setEditingName('');
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to update file name');
+        }
+    };
+
+    // Check if user can delete this file
+    const canDeleteFile = (file) => {
+        // Therapist can delete any file
+        if (userRole === 'therapist') return true;
+        
+        // Client can only delete their own files
+        if (userRole === 'client' && file.uploadedBy?.role === 'client') return true;
+        
+        return false;
+    };
+
+    // Check if user can edit this file name
+    const canEditFile = (file) => {
+        // Same logic as delete - therapist can edit any, client can edit their own
+        if (userRole === 'therapist') return true;
+        if (userRole === 'client' && file.uploadedBy?.role === 'client') return true;
+        return false;
     };
 
     const formatFileSize = (bytes) => {
@@ -107,6 +160,14 @@ export default function ResourceTab({ roomId, userRole }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
         );
+    };
+
+    // Get badge color based on uploader role
+    const getRoleBadge = (role) => {
+        if (role === 'therapist') {
+            return <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded">Therapist</span>;
+        }
+        return <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">Client</span>;
     };
 
     if (loading) {
@@ -200,15 +261,61 @@ export default function ResourceTab({ roomId, userRole }) {
 
                             {/* File Info */}
                             <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-semibold text-gray-900 truncate">
-                                    {file.name}
-                                </h3>
+                                {/* File Name - Editable */}
+                                {editingId === file._id ? (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            value={editingName}
+                                            onChange={(e) => setEditingName(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') saveEdit(file._id);
+                                                if (e.key === 'Escape') cancelEditing();
+                                            }}
+                                            className="flex-1 px-3 py-1.5 border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg font-semibold"
+                                            autoFocus
+                                        />
+                                        <button
+                                            onClick={() => saveEdit(file._id)}
+                                            className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium cursor-pointer"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            onClick={cancelEditing}
+                                            className="px-3 py-1.5 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium cursor-pointer"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                            {file.name}
+                                        </h3>
+                                        {canEditFile(file) && (
+                                            <button
+                                                onClick={() => startEditing(file)}
+                                                className="p-1 text-gray-400 hover:text-purple-600 transition-colors cursor-pointer"
+                                                title="Edit file name"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                                    <span className="flex items-center gap-1">
+                                    <span className="flex items-center gap-1.5">
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                         {file.uploadedBy?.username || 'Unknown'}
+                                        {file.uploadedBy?.role && (
+                                            <span className="ml-1">{getRoleBadge(file.uploadedBy.role)}</span>
+                                        )}
                                     </span>
                                     <span className="flex items-center gap-1">
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -237,7 +344,7 @@ export default function ResourceTab({ roomId, userRole }) {
                                     Download
                                 </button>
                                 
-                                {userRole === 'therapist' && (
+                                {canDeleteFile(file) && (
                                     <button
                                         onClick={() => handleDelete(file._id)}
                                         className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium cursor-pointer"
