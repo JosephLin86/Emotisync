@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyRoom, getJournal } from '../services/roomService';
+import api from '../services/api';
 
 export default function ClientDashboardPage() {
     const [room, setRoom] = useState(null);
     const [journalEntry, setJournalEntry] = useState([]);
+    const [messageCount, setMessageCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showId, setShowId] = useState(false);
-    const [showMoodUpdate, setShowMoodUpdate] = useState(false);
-    const [selectedMood, setSelectedMood] = useState('');
+    
+    // Mood state
+    const [moodScore, setMoodScore] = useState(5);
+    const [stressLevel, setStressLevel] = useState(5);
+    const [energyLevel, setEnergyLevel] = useState(5);
+    const [submitting, setSubmitting] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -28,6 +35,14 @@ export default function ClientDashboardPage() {
             if (roomData._id) {
                 const journalData = await getJournal(roomData._id);
                 setJournalEntry(journalData);
+                
+                // Fetch message count from separate collection
+                try {
+                    const messages = await api.get(`/api/messages/${roomData._id}/messages`);
+                    setMessageCount(messages.data.length);
+                } catch {
+                    setMessageCount(0);
+                }
             }
             setLoading(false);
         } catch (err) {
@@ -52,22 +67,64 @@ export default function ClientDashboardPage() {
         }
     };
 
-    const handleMoodUpdate = (mood) => {
-        setSelectedMood(mood);
-        setShowMoodUpdate(true);
-        // TODO: Send mood update to backend
-        console.log('Mood updated:', mood);
-        setTimeout(() => setShowMoodUpdate(false), 1500);
+    const handleMoodSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!room) return;
+        
+        try {
+            setSubmitting(true);
+            
+            // Determine mood label based on score
+            let moodLabel = 'neutral';
+            if (moodScore <= 2) moodLabel = 'very_sad';
+            else if (moodScore <= 4) moodLabel = 'sad';
+            else if (moodScore <= 6) moodLabel = 'neutral';
+            else if (moodScore <= 8) moodLabel = 'happy';
+            else moodLabel = 'very_happy';
+            
+            await api.post(`/api/room/${room._id}/mood`, {
+                moodScore,
+                moodLabel,
+                stressLevel,
+                energyLevel,
+                optionalNote: ''
+            });
+            
+            // Show success
+            setShowSuccess(true);
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                setShowSuccess(false);
+                // Reset sliders
+                setMoodScore(5);
+                setStressLevel(5);
+                setEnergyLevel(5);
+            }, 2000);
+            
+        } catch (err) {
+            console.error('Failed to log mood:', err);
+            alert('Failed to log mood');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    const moods = [
-        { emoji: '😊', label: 'Happy', value: 'happy' },
-        { emoji: '😌', label: 'Calm', value: 'calm' },
-        { emoji: '😔', label: 'Sad', value: 'sad' },
-        { emoji: '😰', label: 'Anxious', value: 'anxious' },
-        { emoji: '😤', label: 'Frustrated', value: 'frustrated' },
-        { emoji: '😐', label: 'Neutral', value: 'neutral' }
-    ];
+    const getMoodEmoji = () => {
+        if (moodScore <= 2) return '😢';
+        if (moodScore <= 4) return '😔';
+        if (moodScore <= 6) return '😐';
+        if (moodScore <= 8) return '🙂';
+        return '😄';
+    };
+
+    const getMoodColor = () => {
+        if (moodScore >= 8) return 'text-green-600';
+        if (moodScore >= 6) return 'text-blue-600';
+        if (moodScore >= 4) return 'text-yellow-600';
+        return 'text-red-600';
+    };
 
     // Loading state
     if (loading) {
@@ -214,7 +271,7 @@ export default function ClientDashboardPage() {
                                         </svg>
                                         <div className="text-sm text-purple-100">Messages</div>
                                     </div>
-                                    <div className="text-3xl font-bold">{room?.messages?.length || 0}</div>
+                                    <div className="text-3xl font-bold">{messageCount}</div>
                                 </div>
                             </div>
 
@@ -229,13 +286,13 @@ export default function ClientDashboardPage() {
                             </button>
                         </div>
 
-                        {/* Mood Update Card */}
+                        {/* Quick Mood Logger Card */}
                         <div className="bg-white rounded-xl shadow-2xl p-10 border border-purple-100">
                             <div className="flex items-start justify-between mb-6">
                                 <div>
-                                    <h2 className="text-3xl font-bold text-gray-900 mb-2">How are you feeling?</h2>
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Quick Mood Check</h2>
                                     <p className="text-gray-600 text-lg">
-                                        Track your emotional state
+                                        How are you feeling right now?
                                     </p>
                                 </div>
                                 <div className="bg-purple-50 p-3 rounded-lg">
@@ -245,44 +302,100 @@ export default function ClientDashboardPage() {
                                 </div>
                             </div>
 
-                            {!showMoodUpdate ? (
-                                <>
-                                    {/* Mood Selection Grid */}
-                                    <div className="grid grid-cols-3 gap-3 mb-8">
-                                        {moods.map((mood) => (
-                                            <button
-                                                key={mood.value}
-                                                onClick={() => handleMoodUpdate(mood.label)}
-                                                className="bg-gray-50 hover:bg-purple-50 p-6 rounded-lg text-center transition-all hover:scale-105 active:scale-95 border-2 border-gray-200 hover:border-purple-300 cursor-pointer"
-                                            >
-                                                <div className="text-4xl mb-2">{mood.emoji}</div>
-                                                <div className="text-sm font-medium text-gray-700">{mood.label}</div>
-                                            </button>
-                                        ))}
+                            {!showSuccess ? (
+                                <form onSubmit={handleMoodSubmit} className="space-y-6">
+                                    {/* Mood Score */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                            Overall Mood
+                                        </label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="10"
+                                                value={moodScore}
+                                                onChange={(e) => setMoodScore(parseInt(e.target.value))}
+                                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                            <span className="text-4xl">{getMoodEmoji()}</span>
+                                            <span className={`text-3xl font-bold ${getMoodColor()}`}>
+                                                {moodScore}
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+                                    {/* Stress Level */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                            Stress Level
+                                        </label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="10"
+                                                value={stressLevel}
+                                                onChange={(e) => setStressLevel(parseInt(e.target.value))}
+                                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                            <span className="text-2xl font-bold text-gray-700 w-12 text-center">
+                                                {stressLevel}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Energy Level */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                            Energy Level
+                                        </label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="10"
+                                                value={energyLevel}
+                                                onChange={(e) => setEnergyLevel(parseInt(e.target.value))}
+                                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                            <span className="text-2xl font-bold text-gray-700 w-12 text-center">
+                                                {energyLevel}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        {submitting ? 'Saving...' : 'Log Mood'}
+                                    </button>
+
+                                    <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
                                         <p className="text-sm text-purple-700 text-center flex items-center justify-center gap-2">
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            Your mood will be shared with your therapist
+                                            Shared with your therapist for AI insights
                                         </p>
                                     </div>
-                                </>
+                                </form>
                             ) : (
-                                // Mood Updated Confirmation
+                                // Success State
                                 <div className="text-center py-12">
-                                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                                         <svg className="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                     </div>
                                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                        Mood Updated
+                                        Mood Logged!
                                     </h3>
                                     <p className="text-gray-600">
-                                        You're feeling <span className="font-semibold text-purple-600">{selectedMood}</span>
+                                        Your emotional state has been recorded
                                     </p>
                                 </div>
                             )}

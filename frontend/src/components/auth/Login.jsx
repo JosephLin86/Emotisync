@@ -150,7 +150,7 @@ const Login = () => {
 
                 {/* Footer */}
                 <p className="text-center text-purple-600 text-sm mt-8">
-                    Secure therapy platform • HIPAA compliant
+                    Secure therapy platform
                 </p>
             </div>
         </div>

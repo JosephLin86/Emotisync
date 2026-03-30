@@ -3,6 +3,8 @@ const Room = require('../models/Room');
 const JournalEntry = require('../models/JournalEntry');
 const verifyToken = require('../middleware/verifyToken');
 const router = express.Router();
+const { analyzeJournalEntry } = require('../services/aiAnalysis');
+const JournalAnalysis = require('../models/JournalAnalysis');
 
 //Journal Entry POST
 router.post("/:roomId", verifyToken, async(req, res) => {
@@ -49,6 +51,28 @@ router.post("/:roomId", verifyToken, async(req, res) => {
 
         // Populate user info before returning
         await newEntry.populate('user', 'username email role');
+
+        // NEW: Trigger AI analysis asynchronously (in background)
+        analyzeJournalEntry(content)
+            .then(async (analysis) => {
+                const journalAnalysis = new JournalAnalysis({
+                    journalId: newEntry._id,
+                    roomId,
+                    summary: analysis.summary,
+                    sentiment: analysis.sentiment,
+                    emotions: analysis.emotions,
+                    intensity: analysis.intensity,
+                    riskFlags: analysis.riskFlags || [],
+                    suggestedFollowUp: analysis.suggestedFollowUp || ''
+                });
+                
+                await journalAnalysis.save();
+                console.log(`✅ Analysis completed for journal ${newEntry._id}`);
+            })
+            .catch(err => {
+                console.error('⚠️ Background analysis failed:', err);
+                // Don't fail the request - analysis happens in background
+            });
 
         return res.status(201).json(newEntry);
 

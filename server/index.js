@@ -10,6 +10,8 @@ const roomRoutes = require('./routes/room');
 const journalRoutes = require('./routes/journal');
 const resourceRoutes = require('./routes/resources');
 const messageRoutes = require('./routes/messages');
+const moodRoutes = require('./routes/mood');
+const insightsRoutes = require('./routes/insights');
 
 const app = express();
 
@@ -38,6 +40,8 @@ app.use('/api/room', roomRoutes);
 app.use('/api/journal', journalRoutes);
 app.use('/api/room', resourceRoutes);
 app.use('/api/room', messageRoutes);
+app.use('/api/room', moodRoutes);
+app.use('/api/room', insightsRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)

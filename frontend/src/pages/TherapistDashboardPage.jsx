@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTherapistRoom, createRoom, getJournal } from '../services/roomService';
+import api from '../services/api';
 
 const TherapistDashboardPage = () => {
     const [rooms, setRooms] = useState([]);
     const [journalCounts, setJournalCounts] = useState({});
+    const [messageCounts, setMessageCounts] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -27,16 +29,26 @@ const TherapistDashboardPage = () => {
             setRooms(roomsData);
 
             // Fetch journal counts for each room
-            const counts = {};
+            const jCounts = {};
+            const mCounts = {};
             for (const room of roomsData) {
                 try {
                     const journals = await getJournal(room._id);
-                    counts[room._id] = journals.length;
+                    jCounts[room._id] = journals.length;
                 } catch {
-                    counts[room._id] = 0;
+                    jCounts[room._id] = 0;
+                }
+                
+                // Fetch message counts from separate collection
+                try {
+                    const messages = await api.get(`/api/messages/${room._id}/messages`);
+                    mCounts[room._id] = messages.data.length;
+                } catch {
+                    mCounts[room._id] = 0;
                 }
             }
-            setJournalCounts(counts);
+            setJournalCounts(jCounts);
+            setMessageCounts(mCounts);
 
             setLoading(false);
         } catch (err) {
@@ -219,7 +231,7 @@ const TherapistDashboardPage = () => {
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                                     </svg>
-                                                    <span className="font-medium">{room.messages?.length || 0}</span> Messages
+                                                    <span className="font-medium">{messageCounts[room._id] || 0}</span> Messages
                                                 </div>
                                                 <div className="flex items-center gap-2 text-gray-600">
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

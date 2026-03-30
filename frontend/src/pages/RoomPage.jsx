@@ -6,6 +6,7 @@ import JournalTab from '../components/room/JournalTab';
 import MessageTab from '../components/room/MessageTab';
 import MoodTab from '../components/room/MoodTab';
 import ResourceTab from '../components/room/ResourceTab';
+import InsightsTab from '../components/room/InsightsTab';
 import api from '../services/api';
 
 export default function RoomPage() {
@@ -18,7 +19,7 @@ export default function RoomPage() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState('journals'); // journals, messages, mood, resources
+    const [activeTab, setActiveTab] = useState('journals');
 
     useEffect(() => {
         fetchRoomData();
@@ -38,7 +39,7 @@ export default function RoomPage() {
             
             // Fetch messages from separate collection
             try {
-                const messagesResponse = await api.get(`/api/messages/${roomId}/messages`);
+                const messagesResponse = await api.get(`/api/room/${roomId}/messages`);
                 setMessages(messagesResponse.data);
             } catch (msgErr) {
                 console.error('Failed to fetch messages:', msgErr);
@@ -52,6 +53,10 @@ export default function RoomPage() {
         }
     };
 
+    const isTherapist = user?.role === 'therapist';
+    const isClient = user?.role === 'client';
+
+    // Build tabs array based on user role
     const tabs = [
         { 
             id: 'journals', 
@@ -73,7 +78,8 @@ export default function RoomPage() {
             ),
             count: messages.length
         },
-        { 
+        // Only show Mood Tracker to clients
+        ...(isClient ? [{ 
             id: 'mood', 
             name: 'Mood Tracker', 
             icon: (
@@ -81,7 +87,17 @@ export default function RoomPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
             )
-        },
+        }] : []),
+        // Only show AI Insights to therapists
+        ...(isTherapist ? [{ 
+            id: 'insights', 
+            name: 'AI Insights', 
+            icon: (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+            )
+        }] : []),
         { 
             id: 'resources', 
             name: 'Resources', 
@@ -118,7 +134,7 @@ export default function RoomPage() {
                     <div className="text-xl text-gray-900 font-semibold mb-2">Something went wrong</div>
                     <div className="text-gray-600 mb-6">{error}</div>
                     <button
-                        onClick={() => navigate(user?.role === 'therapist' ? '/dashboard/therapist' : '/dashboard/client')}
+                        onClick={() => navigate(isTherapist ? '/dashboard/therapist' : '/dashboard/client')}
                         className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium cursor-pointer"
                     >
                         Back to Dashboard
@@ -140,13 +156,13 @@ export default function RoomPage() {
                             </h1>
                             <p className="text-purple-700 flex items-center gap-2">
                                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                                {user?.role === 'therapist' 
-                                    ? `Client: ${room?.clientId?.username || 'undefined'}` 
-                                    : `Therapist: ${room?.therapistId?.username || 'undefined'}`}
+                                {isTherapist
+                                    ? `Client: ${room?.clientId?.username || 'Unknown'}` 
+                                    : `Therapist: ${room?.therapistId?.username || 'Unknown'}`}
                             </p>
                         </div>
                         <button
-                            onClick={() => navigate(user?.role === 'therapist' ? '/dashboard/therapist' : '/dashboard/client')}
+                            onClick={() => navigate(isTherapist ? '/dashboard/therapist' : '/dashboard/client')}
                             className="px-5 py-2.5 text-purple-700 hover:text-purple-900 hover:bg-purple-100 rounded-lg transition-colors font-medium inline-flex items-center gap-2 cursor-pointer"
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,12 +178,12 @@ export default function RoomPage() {
             <main className="max-w-7xl mx-auto px-6 py-8">
                 {/* Tabs */}
                 <div className="bg-purple-100/50 backdrop-blur-sm rounded-t-xl border-b border-purple-200 p-2">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 overflow-x-auto">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all cursor-pointer ${
+                                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all cursor-pointer whitespace-nowrap ${
                                     activeTab === tab.id
                                         ? 'bg-white text-purple-600 shadow-lg'
                                         : 'text-purple-700 hover:bg-purple-200/50'
@@ -205,10 +221,14 @@ export default function RoomPage() {
                             userRole={user?.role}
                         />
                     )}
-                    {activeTab === 'mood' && (
+                    {activeTab === 'mood' && isClient && (
                         <MoodTab 
                             roomId={roomId}
-                            userRole={user?.role}
+                        />
+                    )}
+                    {activeTab === 'insights' && isTherapist && (
+                        <InsightsTab 
+                            roomId={roomId}
                         />
                     )}
                     {activeTab === 'resources' && (
