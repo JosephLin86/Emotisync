@@ -52,9 +52,6 @@ const Login = () => {
             <div className="max-w-md w-full">
                 {/* Logo/Brand Area */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 shadow-xl border-4 border-purple-200">
-                        <span className="text-4xl">💜</span>
-                    </div>
                     <h1 className="text-4xl font-bold text-purple-900 mb-2">
                         EmotiSync
                     </h1>
