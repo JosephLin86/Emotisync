@@ -41,8 +41,8 @@ const TherapistDashboardPage = () => {
                 
                 // Fetch message counts from separate collection
                 try {
-                    const messages = await api.get(`/api/messages/${room._id}/messages`);
-                    mCounts[room._id] = messages.data.length;
+                    const response = await api.get(`/api/room/${room._id}/messages`);
+                    mCounts[room._id] = response.data.length;
                 } catch {
                     mCounts[room._id] = 0;
                 }

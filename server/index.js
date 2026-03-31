@@ -18,10 +18,15 @@ const app = express();
 // Create HTTP server
 const server = http.createServer(app);
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
 // Configure Socket.io with CORS
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:5173', // Your frontend URL
+        origin: allowedOrigins, // Your frontend URL
         methods: ['GET', 'POST'],
         credentials: true
     }
@@ -29,7 +34,7 @@ const io = new Server(server, {
 
 // Middleware - UPDATE THIS PART
 app.use(cors({
-    origin: 'http://localhost:5173', // Your frontend URL
+    origin: allowedOrigins, // Your frontend URL
     credentials: true
 }));
 app.use(express.json());

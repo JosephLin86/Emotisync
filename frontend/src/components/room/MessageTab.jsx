@@ -82,7 +82,7 @@ export default function MessageTab({ roomId }) {
 
     // Auto-scroll to bottom when new message arrives
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
     }, [messages]);
 
     const handleTyping = () => {
