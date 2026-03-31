@@ -25,24 +25,6 @@ Journal Entry → MongoDB → Claude API Analysis → Structured Emotional Data 
 Aggregation → Wellness Scoring (0-100) → Therapist Insights Dashboard
 ```
 
-## Getting Started  
-```sh
-# Clone repo
-git clone https://github.com/josephlin86/emotisync.git
-
-# Install dependencies
-cd server && npm install
-cd ../frontend && npm install
-
-# Set up environment variables (see .env.example)
-
-# Run backend
-cd server && npm run dev
-
-# Run frontend  
-cd frontend && npm run dev
-```
-
 ## Key Features
 
 **AI Analysis:** Claude API extracts sentiment, emotions, intensity, and risk flags from journal entries  
@@ -55,3 +37,5 @@ cd frontend && npm run dev
 MIT
 
 ---
+
+**GitHub:** https://github.com/JosephLin86/emotisync
