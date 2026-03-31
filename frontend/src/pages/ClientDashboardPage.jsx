@@ -38,7 +38,7 @@ export default function ClientDashboardPage() {
                 
                 // Fetch message count from separate collection
                 try {
-                    const messages = await api.get(`/api/messages/${roomData._id}/messages`);
+                    const messages = await api.get(`/api/room/${roomData._id}/messages`);
                     setMessageCount(messages.data.length);
                 } catch {
                     setMessageCount(0);
