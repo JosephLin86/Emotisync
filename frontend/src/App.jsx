@@ -28,7 +28,7 @@ function App() {
               <ClientDashboardPage/>
             </ProtectedRoute>
             } />
-          <Route path="dashboard/therapist" element={
+          <Route path="/dashboard/therapist" element={
             <ProtectedRoute>
               <TherapistDashboardPage/>
             </ProtectedRoute>

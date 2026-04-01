@@ -52,7 +52,7 @@ router.post("/:roomId", verifyToken, async(req, res) => {
         // Populate user info before returning
         await newEntry.populate('user', 'username email role');
 
-        // NEW: Trigger AI analysis asynchronously (in background)
+        // Trigger AI analysis asynchronously (in background)
         analyzeJournalEntry(content)
             .then(async (analysis) => {
                 const journalAnalysis = new JournalAnalysis({
